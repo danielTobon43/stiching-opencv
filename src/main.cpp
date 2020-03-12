@@ -154,7 +154,9 @@ int main(int argc, char *argv[]) {
 
   cv::Mat previous_homography;
   cv::Mat current_homography;
-  cv::Mat result;
+
+  cv::namedWindow("stitching", cv::WINDOW_NORMAL);
+  cv::resizeWindow("stitching", 640, 480);
 
   int cont = 0;
 
@@ -178,8 +180,8 @@ int main(int argc, char *argv[]) {
 
         // image1 = panorama;
         // panorama.copyTo(image1);
-        // image1 = panorama.clone();
-        image1 = result.clone();
+        image1 = panorama.clone();
+        // image1 = result.clone();
         image2 = images_list_grey[id_image2].clone();
         std::cout << "type of homography:\n" << type2str(image1.type()) << std::endl;
         std::cout << "type of homography:\n" << type2str(image2.type()) << std::endl;
@@ -206,12 +208,12 @@ int main(int argc, char *argv[]) {
 
       std::cout << "number of matches: " << good_matches.size() << std::endl;
 
-      cv::Mat img_matches;
-      drawMatches(image1, keypoints_image1, image2, keypoints_image2, good_matches, img_matches);
-      cv::namedWindow("matches", cv::WINDOW_NORMAL);
-      cv::resizeWindow("matches", 640, 480);
-      cv::imshow("matches", img_matches);
-      cv::waitKey(0);
+      // cv::Mat img_matches;
+      // drawMatches(image1, keypoints_image1, image2, keypoints_image2, good_matches, img_matches);
+      // cv::namedWindow("matches", cv::WINDOW_NORMAL);
+      // cv::resizeWindow("matches", 640, 480);
+      // cv::imshow("matches", img_matches);
+      // cv::waitKey(0);
 
       std::vector<cv::Point2f> points2d_image1;
       std::vector<cv::Point2f> points2d_image2;
@@ -230,6 +232,7 @@ int main(int argc, char *argv[]) {
       } else {
         current_homography = inverse(cv::findHomography(points2d_image1, points2d_image2, cv::RANSAC));
       }
+
       // cv::Mat offset_matrix = cv::Mat::eye(cv::Size(3, 3), CV_32F);
       // offset_matrix.at<float>(0, 2) = 0; // move forward x=600
       // offset_matrix.at<float>(1, 2) = 0; // move forward y
@@ -271,27 +274,38 @@ int main(int argc, char *argv[]) {
 
       // cv::Mat mask(image1.rows, image1.cols, CV_8UC1, Scalar(0));
       // cv::Mat mask = cv::Mat::zeros(result.size(), CV_8UC1);
-
+      cv::Mat result;
       if (cont > 0) {
         // cv::Mat new_result;
-        cv::warpPerspective(image2, result, current_homography, cv::Size(image2.cols * 2, image2.rows),
-                            cv::INTER_LINEAR + cv::WARP_FILL_OUTLIERS, cv::BORDER_CONSTANT, cv::Scalar());
+        cv::warpPerspective(image2, result, current_homography,
+                            cv::Size(image2.cols * images_list_grey.size(), image2.rows * 2), cv::INTER_LINEAR,
+                            cv::BORDER_CONSTANT, cv::Scalar());
 
-        cv::namedWindow("perspective", cv::WINDOW_NORMAL);
-        cv::resizeWindow("perspective", 640, 480);
-        cv::imshow("perspective", result);
-        cv::waitKey(0);
+        // cv::namedWindow("perspective", cv::WINDOW_NORMAL);
+        // cv::resizeWindow("perspective", 640, 480);
+        // cv::imshow("perspective", result);
+        // cv::waitKey(0);
 
         // new_result.copyTo(re);
 
         cv::Mat half2(result, cv::Rect(0, 0, image2.cols, image2.rows));
 
         cv::Mat croppedFrame = image1(cv::Rect(0, 0, image1.cols / 2, image1.rows));
+        // cv::Mat dst;
+        // double alpha = 0.5;
+        // double beta;
+        // beta = (1.0 - alpha);
+        // cv::addWeighted(croppedFrame, alpha, result, beta, 0.0, dst);
 
-        cv::namedWindow("crop", cv::WINDOW_NORMAL);
-        cv::resizeWindow("crop", 640, 480);
-        cv::imshow("crop", croppedFrame);
-        cv::waitKey(0);
+        // cv::namedWindow("dst", cv::WINDOW_NORMAL);
+        // cv::resizeWindow("dst", 640, 480);
+        // cv::imshow("dst", dst);
+        // cv::waitKey(0);
+
+        // cv::namedWindow("crop", cv::WINDOW_NORMAL);
+        // cv::resizeWindow("crop", 640, 480);
+        // cv::imshow("crop", croppedFrame);
+        // cv::waitKey(0);
 
         // for (int i = 0; i < half2.rows; i++) {
         //   for (int j = 0; j < half2.cols; j++) {
@@ -303,41 +317,60 @@ int main(int argc, char *argv[]) {
         // new_result.copyTo(result);
 
       } else {
-        cv::warpPerspective(image2, result, current_homography, cv::Size(image2.cols * 2, image2.rows),
-                            cv::INTER_LINEAR + cv::WARP_FILL_OUTLIERS, cv::BORDER_CONSTANT, cv::Scalar());
+        cv::warpPerspective(image2, result, current_homography, cv::Size(image2.cols * 2, image2.rows * 2),
+                            cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar());
 
-        cv::namedWindow("perspective", cv::WINDOW_NORMAL);
-        cv::resizeWindow("perspective", 640, 480);
-        cv::imshow("perspective", result);
-        cv::waitKey(0);
+        // cv::namedWindow("perspective", cv::WINDOW_NORMAL);
+        // cv::resizeWindow("perspective", 640, 480);
+        // cv::imshow("perspective", result);
+        // cv::waitKey(0);
 
-        cv::Mat half(result, cv::Rect(0, 0, image1.cols, image1.rows));
-
-        cv::namedWindow("half", cv::WINDOW_NORMAL);
-        cv::resizeWindow("half", 640, 480);
-        cv::imshow("half", half);
-        cv::waitKey(0);
-
+        cv::Mat half(result, cv::Rect(0, 0, image2.cols, image2.rows));
         image1.copyTo(half);
+
+        // cv::namedWindow("half", cv::WINDOW_NORMAL);
+        // cv::resizeWindow("half", 640, 480);
+        // cv::imshow("half", half);
+        // cv::waitKey(0);
+
+        // std::vector<cv::Point> nonBlackList;
+        // nonBlackList.reserve(result.rows * result.cols);
+
+        // // add all non-black points to the vector
+        // // there are more efficient ways to iterate through the image
+        // for (int j = 0; j < result.rows; ++j)
+        //   for (int i = 0; i < result.cols; ++i) {
+        //     // if not black: add to the list
+        //     if (result.at<cv::Vec3b>(j, i) != cv::Vec3b(0, 0, 0)) {
+        //       nonBlackList.push_back(cv::Point(i, j));
+        //     }
+        //   }
+
+        // // create bounding rect around those points
+        // cv::Rect bb = cv::boundingRect(nonBlackList);
+
+        // cv::namedWindow("bb", cv::WINDOW_NORMAL);
+        // cv::resizeWindow("bb", 640, 480);
+        // cv::imshow("bb", result(bb));
+        // cv::waitKey(0);
+
         std::string filename2 = "final_result_ppp.png";
 
         cv::imwrite(filename2, result);
       }
 
-      cv::namedWindow("image1", cv::WINDOW_NORMAL);
-      cv::resizeWindow("image1", 640, 480);
-      cv::imshow("image1", image1);
-      cv::waitKey(0);
+      // cv::namedWindow("image1", cv::WINDOW_NORMAL);
+      // cv::resizeWindow("image1", 640, 480);
+      // cv::imshow("image1", image1);
+      // cv::waitKey(0);
 
-      cv::namedWindow("image2", cv::WINDOW_NORMAL);
-      cv::resizeWindow("image2", 640, 480);
-      cv::imshow("image2", image2);
-      cv::waitKey(0);
+      // cv::namedWindow("image2", cv::WINDOW_NORMAL);
+      // cv::resizeWindow("image2", 640, 480);
+      // cv::imshow("image2", image2);
+      // cv::waitKey(0);
 
-      cv::namedWindow("stitching", cv::WINDOW_NORMAL);
-      cv::resizeWindow("stitching", 640, 480);
       cv::imshow("stitching", result);
-      cv::waitKey(0);
+      cv::waitKey(600);
 
       std::string filename = "final_result_" + std::to_string(cont) + ".png";
       cont += 1;
@@ -377,7 +410,7 @@ int main(int argc, char *argv[]) {
       // result(bb).release();
 
       // display result and save it
-      cv::destroyAllWindows();
+      // cv::destroyAllWindows();
       break;
     }
   }
