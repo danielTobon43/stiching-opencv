@@ -1,0 +1,3 @@
+/home/imar01/Desktop/stitching-test/build/CMakeFiles/rebuild_cache.dir
+/home/imar01/Desktop/stitching-test/build/CMakeFiles/edit_cache.dir
+/home/imar01/Desktop/stitching-test/build/CMakeFiles/stitching-test.dir
